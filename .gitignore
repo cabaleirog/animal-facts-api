@@ -1,0 +1,9 @@
+# Cache files
+.mypy_cache/
+.pytest_cache/
+
+# Virtual-environment
+.venv/
+
+# Python
+*.pyc
