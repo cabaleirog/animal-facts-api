@@ -1,0 +1,6 @@
+{
+    "host": "IP/HOST",
+    "database": "DB name",
+    "user": "DB User",
+    "password": "..."
+}
