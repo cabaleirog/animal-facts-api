@@ -7,8 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Iterator
 
 import psycopg2
-
-from src.config.collector import Collector
+from psycopg2._psycopg import connection  # pylint:disable=no-name-in-module
 
 
 @dataclass
@@ -42,7 +41,7 @@ class DatabaseHandle:
         )
 
     @staticmethod
-    def connect(host: str, database: str, user: str, password: str):
+    def connect(host: str, database: str, user: str, password: str) -> connection:
         """
         Create and return a connection to the database
         """

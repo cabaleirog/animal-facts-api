@@ -25,9 +25,12 @@ async def birds_head():
     """
     Amount of Bird facts.
     """
+
+    count = Operator.get_count(table=Operator.BIRDS_TABLE)
+
     return JSONResponse(
         content={"content-length": "0"},
-        headers={"count": f"{len(Operator.get_all(table=Operator.BIRDS_TABLE))}"},
+        headers={"count": f"{count[0] or 0}"},
     )
 
 
@@ -97,7 +100,7 @@ async def bird_add_fact(request: RequestBody):
     Add a new fact for birds!
     """
     result = Operator.create(table=Operator.BIRDS_TABLE, request_body=request)
-
+    print(result)
     return Bird(id=1, fact="w")
 
 

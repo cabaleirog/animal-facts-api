@@ -3,9 +3,9 @@ Holds basic Animal commands.
 """
 import dataclasses
 import re
-from typing import Any, Optional
+from typing import Any
 
-from src.api.models.animal import Animal
+
 from src.api.models.http.body import RequestBody
 from src.config.collector import Collector
 from src.database.postgres import DatabaseHandle, temporary_connection
@@ -27,7 +27,23 @@ class Operator:
     }
 
     @staticmethod
-    def get_all(table: str):
+    def get_count(table: str) -> tuple | None:
+        """
+        Returns the count of a table.
+        """
+        assert table in Operator.__AVAILABLE_TABLES
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector(
+                config_obj=Collector().database_config
+            )
+        ) as cursor:
+            sql = f"SELECT COUNT(*) FROM {table}"
+            cursor.execute(sql)
+            row = cursor.fetchone()
+        return row
+
+    @staticmethod
+    def get_all(table: str) -> list[tuple]:
         """
         Returns a list of all entries in a specific table.
         """
@@ -43,7 +59,7 @@ class Operator:
         return rows
 
     @staticmethod
-    def get_one(table: str, _id: int) -> Optional[tuple[int, str]]:
+    def get_one(table: str, _id: int) -> tuple[int, str] | None:
         """
         Return the row that belongs to the correct ID key.
         """
@@ -59,12 +75,13 @@ class Operator:
         return row
 
     @staticmethod
-    def create(table: str, request_body: RequestBody) -> Optional[Animal]:
+    def create(table: str, request_body: RequestBody) -> tuple | None:
         """
         Create a new resource to the database.
         """
         assert table in Operator.__AVAILABLE_TABLES
 
+        # Sanity Check...
         if re.match("^[0-9]+$", request_body.fact):
             # Checks if the fact is all numerical or if it's actually text.
             # Does almost the same check as "".isdigit()
@@ -75,10 +92,14 @@ class Operator:
                 config_obj=Collector().database_config
             )
         ) as cursor:
-            query = "INSERT INTO {table} (fact) VALUES (%s)".format_map(
-                {"table": table}
+            query = (
+                "INSERT INTO {table} (fact) VALUES (%s) RETURNING id, fact;".format_map(
+                    {"table": table}
+                )
             )
             cursor.execute(query, (request_body.fact,))
+            row = cursor.fetchone()
+        return row
 
     # @staticmethod
     # def add(file_name: str, request_body: RequestBody):

@@ -10,4 +10,6 @@ if __name__ == "__main__":
         app="src.api.main:app",
         reload=True,
         log_level="info",
+        port=8080,
+        host="0.0.0.0",
     )  # type: ignore

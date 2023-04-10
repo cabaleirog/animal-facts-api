@@ -14,22 +14,24 @@ class Collector:
     """
 
     BASE_CONFIG_LOCATION = "src/config"
-    _CONFIG_FILES = {DATABASE_CONFIG := "database-config.json"}
+    _CONFIG_FILES = {
+        DATABASE_CONFIG := "database-config.json",
+    }
 
-    config_path: str = BASE_CONFIG_LOCATION
-
-    def load_config(self, file_name: str) -> dict[str, Any]:
+    def load_config(self, config_file: str) -> dict[str, Any]:
         """
         Loads a config based on the given config file.
         """
-        assert file_name in Collector._CONFIG_FILES
+        assert config_file in Collector._CONFIG_FILES
 
         config: dict[str, Any] = {}
-        for config_file in os.listdir(self.config_path):
-            if config_file == file_name:
-                path_to_file = os.path.join(self.config_path, config_file)
+
+        # Find the correct config file
+        for file in os.listdir(self.BASE_CONFIG_LOCATION):
+            if file == config_file:
+                path_to_file = os.path.join(self.BASE_CONFIG_LOCATION, config_file)
                 with open(path_to_file, "r", encoding="utf-8") as f_conf:
-                    config.update(json.load(f_conf))
+                    config.update(json.load(fp=f_conf))
         return config
 
     @property
@@ -37,4 +39,4 @@ class Collector:
         """
         Returns the Database Configuration
         """
-        return self.load_config(file_name=Collector.DATABASE_CONFIG)
+        return self.load_config(config_file=Collector.DATABASE_CONFIG)
