@@ -9,11 +9,14 @@ from typing import Any, Iterator
 import psycopg2
 from psycopg2._psycopg import connection  # pylint:disable=no-name-in-module
 
-from dotenv import dotenv_values
+from dotenv import load_dotenv
+
+import os
+
+load_dotenv()
 
 POSTGRESQL_HOSTNAME = "db"
 POSTGRESQL_PORT = "5432"
-config: dict[str, Any] = dotenv_values(".env")
 
 
 @dataclass
@@ -24,9 +27,9 @@ class DatabaseHandle:
     """
 
     _VALID_KEYS = {
-        DATABASE_KEY := "ANIMAL_DATABASE",
-        USER_KEY := "ANIMAL_USER",
-        PASSWORD_KEY := "ANIMAL_PASSWORD",
+        DATABASE_KEY := "POSTGRES_DATABASE",
+        USER_KEY := "POSTGRES_USER",
+        PASSWORD_KEY := "POSTGRES_PASSWORD",
     }
     host: str
     database: str
@@ -42,9 +45,9 @@ class DatabaseHandle:
         """
         return cls(
             host=POSTGRESQL_HOSTNAME,
-            database=config[cls.DATABASE_KEY],
-            user=config[cls.USER_KEY],
-            password=config[cls.PASSWORD_KEY],
+            database=os.getenv(cls.DATABASE_KEY, ""),
+            user=os.getenv(cls.USER_KEY, ""),
+            password=os.getenv(cls.PASSWORD_KEY, ""),
         )
 
     @staticmethod

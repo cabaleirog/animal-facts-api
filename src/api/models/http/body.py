@@ -11,3 +11,4 @@ class RequestBody(BaseModel):  # pylint:disable=too-few-public-methods
     """
 
     fact: str
+    animal: str
