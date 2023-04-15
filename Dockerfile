@@ -1,5 +1,5 @@
 # Official python docker image
-FROM python:3.11.2
+FROM python:latest
 
 # Work directory
 WORKDIR /code

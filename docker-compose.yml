@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  web:
+    image: . # replace with the name of your FastAPI image
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - appnet
+    env_file:
+      - ./.env
+
+  db:
+    image: postgres:13
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - appnet
+    env_file:
+      - ./.env
+
+volumes:
+  dbdata:
+
+networks:
+  appnet:

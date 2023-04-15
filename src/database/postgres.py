@@ -9,6 +9,12 @@ from typing import Any, Iterator
 import psycopg2
 from psycopg2._psycopg import connection  # pylint:disable=no-name-in-module
 
+from dotenv import dotenv_values
+
+POSTGRESQL_HOSTNAME = "db"
+POSTGRESQL_PORT = "5432"
+config: dict[str, Any] = dotenv_values(".env")
+
 
 @dataclass
 class DatabaseHandle:
@@ -18,10 +24,9 @@ class DatabaseHandle:
     """
 
     _VALID_KEYS = {
-        HOST_KEY := "host",
-        DATABASE_KEY := "database",
-        USER_KEY := "user",
-        PASSWORD_KEY := "password",
+        DATABASE_KEY := "ANIMAL_DATABASE",
+        USER_KEY := "ANIMAL_USER",
+        PASSWORD_KEY := "ANIMAL_PASSWORD",
     }
     host: str
     database: str
@@ -29,15 +34,17 @@ class DatabaseHandle:
     password: str
 
     @classmethod
-    def from_collector(cls, config_obj: dict[str, Any]) -> "DatabaseHandle":
+    def from_collector(
+        cls,
+    ) -> "DatabaseHandle":
         """
         Converts the database config into a DatabaseHandle and returns the class.
         """
         return cls(
-            host=config_obj[cls.HOST_KEY],
-            database=config_obj[cls.DATABASE_KEY],
-            user=config_obj[cls.USER_KEY],
-            password=config_obj[cls.PASSWORD_KEY],
+            host=POSTGRESQL_HOSTNAME,
+            database=config[cls.DATABASE_KEY],
+            user=config[cls.USER_KEY],
+            password=config[cls.PASSWORD_KEY],
         )
 
     @staticmethod

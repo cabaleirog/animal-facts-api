@@ -7,7 +7,8 @@ from typing import Any
 
 
 from src.api.models.http.body import RequestBody
-from src.config.collector import Collector
+
+# from src.config.collector import Collector
 from src.database.postgres import DatabaseHandle, temporary_connection
 
 
@@ -33,9 +34,7 @@ class Operator:
         """
         assert table in Operator.__AVAILABLE_TABLES
         with temporary_connection(
-            database_handle=DatabaseHandle.from_collector(
-                config_obj=Collector().database_config
-            )
+            database_handle=DatabaseHandle.from_collector()
         ) as cursor:
             sql = f"SELECT COUNT(*) FROM {table}"
             cursor.execute(sql)
@@ -49,9 +48,7 @@ class Operator:
         """
         assert table in Operator.__AVAILABLE_TABLES
         with temporary_connection(
-            database_handle=DatabaseHandle.from_collector(
-                config_obj=Collector().database_config
-            )
+            database_handle=DatabaseHandle.from_collector()
         ) as cursor:
             sql = f"SELECT * FROM {table}"
             cursor.execute(sql)
@@ -65,9 +62,7 @@ class Operator:
         """
         assert table in Operator.__AVAILABLE_TABLES
         with temporary_connection(
-            database_handle=DatabaseHandle.from_collector(
-                config_obj=Collector().database_config
-            )
+            database_handle=DatabaseHandle.from_collector()
         ) as cursor:
             sql = f"SELECT * FROM {table} WHERE id={_id};"
             cursor.execute(sql)
@@ -88,9 +83,7 @@ class Operator:
             return None
 
         with temporary_connection(
-            database_handle=DatabaseHandle.from_collector(
-                config_obj=Collector().database_config
-            )
+            database_handle=DatabaseHandle.from_collector()
         ) as cursor:
             query = (
                 "INSERT INTO {table} (fact) VALUES (%s) RETURNING id, fact;".format_map(
