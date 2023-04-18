@@ -8,7 +8,6 @@ Initiate the routers.
 # from src.api.routers.kangaroos import router as kangaroos_router
 from src.api.routers.animal import router as animal_router
 
-
 __all__ = [
     # "birds_router",
     # "cats_router",

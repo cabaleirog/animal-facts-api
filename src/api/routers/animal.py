@@ -1,35 +1,83 @@
 """
 ANIMALSSSSSSSSSSSSSSSSSSSSss
 """
-import random
+
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Path, Query
 
-from src.api.models.animal import FactModel
-
+from src.api.models.animal import AnimalEnum, FactModel
 from src.api.utils.operations import Operator
-from src.api.models.http.body import RequestBody
-from src.api.models.animal import FactModel
 
-router = APIRouter(prefix="/fact", tags=["Animal"])
+router = APIRouter(prefix="/facts", tags=["Animal Facts"])
 
 
 @router.get(
     path="/",
     status_code=200,
-    response_model=FactModel,
-    name="Get a list of all bird facts",
-    description="Get a list of all bird facts",
+    response_model=List[FactModel],
+    name="Retrieve all facts from the database",
+    description="Get all facts",
 )
-async def get_random(animal: str | None):
+async def get_all_facts(
+    animal: AnimalEnum | None = Query(default=None),
+) -> list[FactModel]:
     """
     Get a random fact of an animal
     """
-    if animal is None:
-        return FactModel(**Operator.get_random())
 
-    return FactModel(**Operator.get_random_by_animal(animal=animal))
+    result = (
+        Operator.get_all_for_animal(animal=animal.value)
+        if animal
+        else Operator.get_all()
+    )
+
+    if result[0].get("ERROR"):
+        raise HTTPException(status_code=404, detail="Did not find any fact")
+
+    return [FactModel(**x) for x in result]
+
+
+@router.get(
+    path="/random",
+    status_code=200,
+    response_model=FactModel,
+    name="Retrieve a random animal fact",
+    description="Get a random fact about an animal!",
+)
+async def random_fact(animal: AnimalEnum | None = Query(default=None)):
+    """
+    Get a random fact of an animal
+    """
+    result = (
+        Operator.get_random_by_animal(animal=animal.value)
+        if animal
+        else Operator.get_random()
+    )
+
+    if result.get("ERROR"):
+        raise HTTPException(status_code=404, detail="Did not find any fact")
+
+    return FactModel(**result)
+
+
+@router.get(
+    path="/{id}",
+    status_code=200,
+    response_model=FactModel,
+    name="Retrieve a fact about based on a given ID",
+    description="Get a specific fact",
+)
+async def get_fact_by_id(xid: int = Path(alias="id", ge=1)):
+    """
+    Get a random fact of an animal that you specify in the PATH
+    """
+    result = Operator.get_one(_id=xid)
+
+    if result.get("ERROR"):
+        raise HTTPException(status_code=404, detail="Did not find any fact")
+
+    return FactModel(**result)
 
 
 # @router.get(

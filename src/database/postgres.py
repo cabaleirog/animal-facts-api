@@ -2,16 +2,14 @@
 This module is meant to represent the Database handle to PostgreSQL
 """
 
+import os
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Iterator
 
 import psycopg2
-from psycopg2._psycopg import connection  # pylint:disable=no-name-in-module
-
 from dotenv import load_dotenv
-
-import os
+from psycopg2._psycopg import connection  # pylint:disable=no-name-in-module
 
 load_dotenv()
 

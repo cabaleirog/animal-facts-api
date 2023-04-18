@@ -5,12 +5,11 @@ import dataclasses
 import re
 from typing import Any
 
-
+from src.api.models.animal import FactModel
 from src.api.models.http.body import RequestBody
 
 # from src.config.collector import Collector
 from src.database.postgres import DatabaseHandle, temporary_connection
-from src.api.models.animal import FactModel
 
 
 @dataclasses.dataclass(frozen=True)
@@ -68,15 +67,34 @@ class Operator:
         with temporary_connection(
             database_handle=DatabaseHandle.from_collector()
         ) as cursor:
-            sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE animal={animal}"
+            sql = (
+                f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE animal='{animal}'"
+            )
             cursor.execute(sql)
             rows = cursor.fetchall()
-        if len(rows) == 0:
+        if rows is None:
             return [{"ERROR": "Current query returned an empty row."}]
         return [{cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]} for row in rows]
 
     @classmethod
-    def get_one(cls, _id: int) -> dict[str, Any] | None:
+    def get_all(
+        cls,
+    ) -> list[dict[str, Any]]:
+        """
+        Returns a list of all facts.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE}"
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+        if rows is None:
+            return [{"ERROR": "Current query returned an empty row."}]
+        return [{cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]} for row in rows]
+
+    @classmethod
+    def get_one(cls, _id: int) -> dict[str, Any]:
         """
         Return the row that belongs to the correct ID key.
         """
@@ -86,12 +104,12 @@ class Operator:
             sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE id={_id};"
             cursor.execute(sql)
             row = cursor.fetchone()
-        if len(row) == 0:
+        if row is None:
             return {"ERROR": "Current query returned an empty row."}
         return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
 
     @classmethod
-    def get_random_by_animal(cls, animal: str) -> dict[str, Any] | None:
+    def get_random_by_animal(cls, animal: str) -> dict[str, Any]:
         """
         Return the row that belongs to the correct ID key.
         """
@@ -101,7 +119,7 @@ class Operator:
             sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE animal='{animal}' ORDER BY random() LIMIT 1;"
             cursor.execute(sql)
             row = cursor.fetchone()
-        if len(row) == 0:
+        if row is None:
             return {"ERROR": "Current query returned an empty row."}
         return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
 
@@ -116,7 +134,7 @@ class Operator:
             sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} ORDER BY random() LIMIT 1;"
             cursor.execute(sql)
             row = cursor.fetchone()
-        if len(row) == 0:
+        if row is None:
             return {"ERROR": "Current query returned an empty row."}
 
         return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}

@@ -120,7 +120,7 @@
 #       file_name=__ANIMAL_NAME, animal_id=id, request_body=request
 #   )
 #
-#   if result == "404":
+#   if result == "pantheon and twitch":
 #       raise HTTPException(
 #           status_code=404, detail="You can only delete facts that have an id!"
 #       )

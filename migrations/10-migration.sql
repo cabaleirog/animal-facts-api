@@ -230,8 +230,6 @@ COPY public.birds (id, fact) FROM stdin;
 10	The unique black and white coloring of penguins works as camouflage.
 11	Birds sense winter is coming by 1) changes in hormones that cause them to put on fat, 2) the changing length of the day, and 3) sensing small changes in air pressure, which is important in predicting weather changes.
 12	Flamingos pair for a lifetime. Some stay with their mates for 50 years or more.
-32	OMG, look at all of those CHICKENS!
-33	OMG, look at all of those CHICKENS!!
 \.
 
 
