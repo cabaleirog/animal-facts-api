@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   web:
-    image: . # replace with the name of your FastAPI image
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -11,6 +13,8 @@ services:
       - appnet
     env_file:
       - ./.env
+    volumes:
+      - ./src:/code/src
 
   db:
     image: postgres:13
@@ -26,6 +30,7 @@ services:
 
 volumes:
   dbdata:
+
 
 networks:
   appnet:

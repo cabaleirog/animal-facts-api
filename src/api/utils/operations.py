@@ -5,8 +5,10 @@ import dataclasses
 import re
 from typing import Any
 
+from psycopg2.errors import UniqueViolation
 
-from src.api.models.http.body import RequestBody
+from src.api.models.animal import FactModel
+from src.api.models.http.body import AbstractRequestModel, RequestModel
 
 # from src.config.collector import Collector
 from src.database.postgres import DatabaseHandle, temporary_connection
@@ -20,138 +22,182 @@ class Operator:
     """
 
     __AVAILABLE_TABLES = {
-        BIRDS_TABLE := "birds",
-        CATS_TABLE := "cats",
-        DOGS_TABLE := "dogs",
-        FOXES_TABLE := "foxes",
-        KANGAROOS_TABLE := "kangaroos",
+        ANIMAL_TABLE := "animals"
+        # BIRDS_TABLE := "birds",
+        # CATS_TABLE := "cats",
+        # DOGS_TABLE := "dogs",
+        # FOXES_TABLE := "foxes",
+        # KANGAROOS_TABLE := "kangaroos",
+    }
+    __VALID_PROPERTIES = {
+        ID := "id",
+        FACT := "fact",
+        ANIMAL := "animal",
     }
 
-    @staticmethod
-    def get_count(table: str) -> tuple | None:
+    @classmethod
+    def count_for_animal(cls, animal: str) -> int | None:
         """
         Returns the count of a table.
         """
-        assert table in Operator.__AVAILABLE_TABLES
         with temporary_connection(
             database_handle=DatabaseHandle.from_collector()
         ) as cursor:
-            sql = f"SELECT COUNT(*) FROM {table}"
+            sql = f"SELECT COUNT(*) FROM {cls.ANIMAL_TABLE} WHERE animal='{animal}'"
             cursor.execute(sql)
             row = cursor.fetchone()
-        return row
+        return row[0]
 
-    @staticmethod
-    def get_all(table: str) -> list[tuple]:
+    @classmethod
+    def count_all(cls) -> int | None:
+        """
+        Returns the count of a table.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            sql = f"SELECT COUNT(*) FROM {cls.ANIMAL_TABLE}"
+            cursor.execute(sql)
+            row = cursor.fetchone()
+        return row[0]
+
+    @classmethod
+    def get_all_for_animal(cls, animal: str) -> list[dict[str, Any]]:
         """
         Returns a list of all entries in a specific table.
         """
-        assert table in Operator.__AVAILABLE_TABLES
         with temporary_connection(
             database_handle=DatabaseHandle.from_collector()
         ) as cursor:
-            sql = f"SELECT * FROM {table}"
+            sql = (
+                f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE animal='{animal}'"
+            )
             cursor.execute(sql)
             rows = cursor.fetchall()
-        return rows
+        if rows is None:
+            return [{"ERROR": "Current query returned an empty row."}]
+        return [{cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]} for row in rows]
 
-    @staticmethod
-    def get_one(table: str, _id: int) -> tuple[int, str] | None:
+    @classmethod
+    def get_all(
+        cls,
+    ) -> list[dict[str, Any]]:
+        """
+        Returns a list of all facts.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE}"
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+        if rows is None:
+            return [{"ERROR": "Current query returned an empty row."}]
+        return [{cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]} for row in rows]
+
+    @classmethod
+    def get_one(cls, _id: int) -> dict[str, Any]:
         """
         Return the row that belongs to the correct ID key.
         """
-        assert table in Operator.__AVAILABLE_TABLES
         with temporary_connection(
             database_handle=DatabaseHandle.from_collector()
         ) as cursor:
-            sql = f"SELECT * FROM {table} WHERE id={_id};"
+            sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE id={_id};"
             cursor.execute(sql)
             row = cursor.fetchone()
-        return row
+        if row is None:
+            return {"ERROR": "Current query returned an empty row."}
+        return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
 
-    @staticmethod
-    def create(table: str, request_body: RequestBody) -> tuple | None:
+    @classmethod
+    def get_random_by_animal(cls, animal: str) -> dict[str, Any]:
+        """
+        Return the row that belongs to the correct ID key.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} WHERE animal='{animal}' ORDER BY random() LIMIT 1;"
+            cursor.execute(sql)
+            row = cursor.fetchone()
+        if row is None:
+            return {"ERROR": "Current query returned an empty row."}
+        return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
+
+    @classmethod
+    def get_random(cls) -> dict[str, Any]:
+        """
+        Return the row that belongs to the correct ID key.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            sql = f"SELECT id,fact,animal FROM {cls.ANIMAL_TABLE} ORDER BY random() LIMIT 1;"
+            cursor.execute(sql)
+            row = cursor.fetchone()
+        if row is None:
+            return {"ERROR": "Current query returned an empty row."}
+
+        return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
+
+    @classmethod
+    def create(cls, request_body: RequestModel) -> dict[str, Any]:
         """
         Create a new resource to the database.
         """
-        assert table in Operator.__AVAILABLE_TABLES
-
-        # Sanity Check...
-        if re.match("^[0-9]+$", request_body.fact):
-            # Checks if the fact is all numerical or if it's actually text.
-            # Does almost the same check as "".isdigit()
-            return None
-
         with temporary_connection(
             database_handle=DatabaseHandle.from_collector()
         ) as cursor:
-            query = (
-                "INSERT INTO {table} (fact) VALUES (%s) RETURNING id, fact;".format_map(
-                    {"table": table}
+            try:
+                query = "INSERT INTO {table} (fact, animal) VALUES (%s, %s) RETURNING id, fact, animal;".format_map(
+                    {"table": cls.ANIMAL_TABLE}
                 )
-            )
-            cursor.execute(query, (request_body.fact,))
+                cursor.execute(query, (request_body.fact, request_body.animal))
+                row = cursor.fetchone()
+            except UniqueViolation:
+                return {"ERROR": "This fact already exists for this animal!"}
+
+        return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
+
+    @classmethod
+    def remove_one(cls, _id: int) -> dict[str, Any]:
+        """
+        Delete a entry from the database if it is found.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            # Find if it exists
+            sql_find = f"SELECT id FROM {cls.ANIMAL_TABLE} WHERE id={_id};"
+            cursor.execute(sql_find)
             row = cursor.fetchone()
-        return row
+            if row is None:
+                return {"ERROR": "Could not find the id"}
 
-    # @staticmethod
-    # def add(file_name: str, request_body: RequestBody):
-    #     """
-    #     Append a fact to the animal list
-    #     """
-    #     all_facts = Animal.all_facts(fact_file_name=file_name)
-    #     max_number = max(all_facts, key=lambda x: x["id"])
-    #     dict_to_add = {
-    #         "id": int(max_number["id"]) + 1,
-    #         "fact": request_body.fact,
-    #     }
-    #     all_facts.append(dict_to_add)
-    #     with open(
-    #         f"{os.path.dirname(__file__)}/{file_name}.json", "w", encoding="UTF-8"
-    #     ) as fact_file:
-    #         json.dump(all_facts, fact_file, indent=4)
-    #     return dict_to_add
+            # Delete it
+            sql_delete = f"DELETE FROM {cls.ANIMAL_TABLE} WHERE id={_id};"
+            cursor.execute(sql_delete)
 
-    # @staticmethod
-    # def delete(file_name: str, animal_id: int):
-    #     """
-    #     Delete a fact from an animal
-    #     """
+        return {"SUCCESS": f"Successfully removed fact number: {_id}"}
 
-    #     all_facts = Animal.all_facts(fact_file_name=file_name)
+    @classmethod
+    def update_one(cls, _id: int, request: AbstractRequestModel) -> dict[str, Any]:
+        """
+        Updates a resource in the database.
+        """
+        with temporary_connection(
+            database_handle=DatabaseHandle.from_collector()
+        ) as cursor:
+            try:
+                query = "UPDATE {table} SET fact=(%s) WHERE id={_id} RETURNING id, fact, animal;".format_map(
+                    {"table": cls.ANIMAL_TABLE, "_id": _id}
+                )
+                cursor.execute(query, (request.fact,))
+                row = cursor.fetchone()
+            except UniqueViolation:
+                return {"ERROR": "This fact already exists for this animal!"}
 
-    #     for fact in all_facts:
-    #         if fact.get("id") == animal_id:
-    #             all_facts.remove(fact)
-    #             with open(
-    #                 f"{os.path.dirname(__file__)}/{file_name}.json",
-    #                 "w",
-    #                 encoding="UTF-8",
-    #             ) as fact_file:
-    #                 json.dump(all_facts, fact_file, indent=4)
-    #             return "204"
-    #     return "404"
-
-    # @staticmethod
-    # def update(file_name: str, animal_id: int, request_body: RequestBody):
-    #     """
-    #     Update a fact
-    #     """
-    #     all_facts = Animal.all_facts(fact_file_name=file_name)
-
-    #     for index, fact in enumerate(all_facts):
-    #         if fact.get("id") == animal_id:
-    #             the_fact_to_update = all_facts.pop(index)
-    #             the_fact_to_update["fact"] = request_body.fact
-    #             all_facts.insert(index, the_fact_to_update)
-    #             with open(
-    #                 f"{os.path.dirname(__file__)}/{file_name}.json",
-    #                 "w",
-    #                 encoding="UTF-8",
-    #             ) as fact_file:
-    #                 json.dump(all_facts, fact_file, indent=4)
-    #             return "204"
-    #     return "404"
-
-
-# Animal.convert_all(file="kangaroos")
+        if row is None:
+            return {"ERROR": "Could not find the id"}
+        return {cls.ID: row[0], cls.FACT: row[1], cls.ANIMAL: row[2]}
