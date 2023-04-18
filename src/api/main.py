@@ -3,8 +3,9 @@ The root APP to be extracted in our tests!
 """
 from fastapi import FastAPI
 
-from src.api.routers import \
-    animal_router  # birds_router,; cats_router,; dogs_router,; foxes_router,; kangaroos_router,
+from src.api.routers import (  # birds_router,; cats_router,; dogs_router,; foxes_router,; kangaroos_router,
+    animal_router,
+)
 
 app = FastAPI(version="1.0.0")
 

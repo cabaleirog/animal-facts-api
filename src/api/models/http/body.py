@@ -4,11 +4,20 @@ Holds the BaseModel for the request body
 
 from pydantic import BaseModel  # pylint:disable=no-name-in-module
 
+from src.api.models.animal import AnimalEnum
 
-class RequestBody(BaseModel):  # pylint:disable=too-few-public-methods
+
+class AbstractRequestModel(BaseModel):
     """
-    Pydantic model for adding facts
+    Abstract model for only accepting the FACT payload.
     """
 
     fact: str
-    animal: str
+
+
+class RequestModel(AbstractRequestModel):
+    """
+    The request model for payloads with the FACT and ANIMAL values.
+    """
+
+    animal: AnimalEnum

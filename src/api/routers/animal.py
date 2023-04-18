@@ -2,11 +2,13 @@
 ANIMALSSSSSSSSSSSSSSSSSSSSss
 """
 
+import re
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Path, Query
 
 from src.api.models.animal import AnimalEnum, FactModel
+from src.api.models.http.body import AbstractRequestModel, RequestModel
 from src.api.utils.operations import Operator
 
 router = APIRouter(prefix="/facts", tags=["Animal Facts"])
@@ -80,63 +82,76 @@ async def get_fact_by_id(xid: int = Path(alias="id", ge=1)):
     return FactModel(**result)
 
 
-# @router.get(
-#    path="/",
-#    response_model=FactModel,
-#    description="Get a specific fact based on an id",
-#    name="Get a specific fact",
-# )
-# async def specific_fact(id: int):  # pylint: disable=redefined-builtin, invalid-name
-#    """
-#    Returns the fact of a specific animal with the requested id.
-#    """
-#    row = Operator.get_one(_id=id)
-#    _id, fact, animal = row
-#    return FactModel(id=_id, fact=fact, animal=animal)
-#
-#
-# @router.get(
-#    path="/",
-#    response_model=FactModel,
-#    description="Get a random fact about an animal",
-#    name="Get random fact",
-# )
-# async def random_fact(animal: str):  # pylint: disable=redefined-builtin, invalid-name
-#    """
-#    Returns the fact of a specific animal with the requested id.
-#    """
-#    row = Operator.get_one(_id=id)
-#    _id, fact, animal = row
-#    return FactModel(id=_id, fact=fact, animal=animal)
-#
-#
-# @router.post(
-#    path="/",
-#    response_model=FactModel,
-#    description="Create a new Bird fact",
-#    name="Create a new Bird fact",
-# )
-# async def bird_add_fact(request: RequestBody):
-#    """
-#    Add a new fact for birds!
-#    """
-#    result = Operator.create(table=Operator.BIRDS_TABLE, request_body=request)
-#    print(result)
-#    return FactModel(id=1, fact="w")
-#
+@router.post(
+    path="/",
+    response_model=FactModel,
+    status_code=201,
+    name="Create a new fact",
+    description="Create a new fact based on a animal type",
+)
+async def create_fact(request: RequestModel):
+    """
+    Create a new fact about an animal
+    """
+    # Sanity Check...
+    if re.match("^[0-9]+$", request.fact):
+        # Checks if the fact is all numerical or if it's actually text.
+        # Does almost the same check as "".isdigit()
+        raise HTTPException(
+            status_code=406, detail="The fact provided, is not acceptable"
+        )
 
-# API -> DB
+    result = Operator.create(request_body=request)
 
-# API - return facts about animals
-# GET /fact -> [....] | GET ALL
-# GET /fact?id=1 -> 1 fact | GET ONE
-# GET /fact?animal=dog -> 1 RANDOM dog fact | GET RANDOM
+    if result.get("ERROR"):
+        raise HTTPException(status_code=403, detail=result.get("ERROR"))
+
+    return FactModel(**result)
 
 
-# CRUD
+@router.delete(
+    path="/{id}",
+    status_code=204,
+    response_model=None,
+    name="Remove a fact about an animal.",
+    description="Remove a fact.",
+)
+async def remove_fact_by_id(xid: int = Path(alias="id", ge=1)):
+    """
+    Remove a fact based on a given ID
+    """
+    result = Operator.remove_one(_id=xid)
 
-# API tests
+    if result.get("ERROR"):
+        raise HTTPException(status_code=404, detail="Did not find any fact")
 
-# DEVOPS
+    return None
 
-# AUTOMATE tests..
+
+@router.patch(
+    path="/{id}",
+    status_code=200,
+    response_model=FactModel,
+    name="Update a fact about an animal.",
+    description="Update a fact, based on a specific ID.",
+)
+async def update_by_id(
+    request: AbstractRequestModel, xid: int = Path(alias="id", ge=1)
+):
+    """
+    Update a fact based on a given ID
+    """
+    # Sanity Check...
+    if re.match("^[0-9]+$", request.fact):
+        # Checks if the fact is all numerical or if it's actually text.
+        # Does almost the same check as "".isdigit()
+        raise HTTPException(
+            status_code=406, detail="The fact provided, is not acceptable"
+        )
+
+    result = Operator.update_one(_id=xid, request=request)
+
+    if result.get("ERROR"):
+        raise HTTPException(status_code=404, detail=result.get("ERROR"))
+
+    return FactModel(**result)

@@ -246,7 +246,6 @@ COPY public.cats (id, fact) FROM stdin;
 6	Cats have an extra organ that allows them to taste scents on the air, which is why your cat stares at you with her mouth open from time to time.
 7	Evidence suggests domesticated cats have been around since 3600 B.C., 2,000 years before Egypt's pharaohs.
 8	Cat owners are 17% more likely to have a graduate degree.
-9	Cats make about 100 different sounds. Dogs make only about 10.
 10	A cat called the Turkish Van does not have the fur insulation problem and LOVES water.
 11	A cat ran for mayor of Mexico City in 2013.
 12	A house cat is faster than Usain Bolt.
@@ -311,19 +310,14 @@ COPY public.foxes (id, fact) FROM stdin;
 --
 
 COPY public.kangaroos (id, fact) FROM stdin;
-1	Kangaroos have very powerful legs and can be dangerous at times.
-2	There are four different kangaroo species, the red kangaroo, eastern grey kangaroo, western grey kangaroo and antilopine kangaroo.
 3	Like all marsupials, kangaroos are born extremely early; the equivalent of the seventh week of pregnancy for humans. They travel from the birth canal as little more than an embryo by blindly propelling through the mother's fur to the safety of the pouch, where they will spend several months developing before finally leaving to explore the world.
 4	On land kangaroos only ever move their hind legs together, however in water they kick each leg independently to swim.
 5	There are more kangaroos than humans in Australia. They are the national symbol of Australia and appear on postage stamps, coins, and aeroplanes.
-6	There are four different kangaroo species, the red kangaroo, eastern grey kangaroo, western grey kangaroo and antilopine kangaroo.
 7	In one leap they can jump 3m high and 7.6m long.
 8	Kangaroos have very powerful legs and can be dangerous at times.
 9	Kangaroos are marsupial animals that are found in Australia as well as New Guinea.
 10	There are four different kangaroo species, the red kangaroo, eastern grey kangaroo, western grey kangaroo and antilopine kangaroo.
-11	Kangaroos are marsupial animals that are found in Australia as well as New Guinea.
 12	Female kangaroos can determine the gender of their offspring. They can even delay gestation when environmental factors are likely to diminish the chance of young surviving.
-13	In one leap they can jump 3m high and 7.6m long.
 \.
 
 
