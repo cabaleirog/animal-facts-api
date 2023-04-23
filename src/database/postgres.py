@@ -5,7 +5,7 @@ This module is meant to represent the Database handle to PostgreSQL
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Iterator
+from typing import Iterator
 
 import psycopg2
 from dotenv import load_dotenv
@@ -39,7 +39,7 @@ class DatabaseHandle:
         cls,
     ) -> "DatabaseHandle":
         """
-        Converts the database config into a DatabaseHandle and returns the class.
+        Converts the database config into a DatabaseHandle and returns the class
         """
         return cls(
             host=POSTGRESQL_HOSTNAME,
