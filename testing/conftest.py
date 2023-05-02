@@ -1,23 +1,19 @@
 """
 Conftest file for fixtures.
 """
+from typing import Iterator
+
 import pytest
-from fastapi.testclient import TestClient
-
-from src.api.main import app
+from httpx import Client
 
 
-@pytest.fixture(scope="module")
-def client() -> TestClient:
+@pytest.fixture(scope="session")
+def client() -> Iterator[Client]:
     """
     Return the TestClient
     """
-
-    return TestClient(
-        app=app,
-        base_url="http://animaltesting",
-        raise_server_exceptions=True,
-        root_path="",
-        backend="asyncio",
-        backend_options=None,
-    )
+    with Client(base_url="http://0.0.0.0:8080") as _client:
+        try:
+            yield _client
+        finally:
+            _client.close()
