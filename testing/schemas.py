@@ -1,9 +1,9 @@
 """
 Schemas
 """
-from dataclasses import dataclass, field
+
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any
 
 import httpx
 from pydantic import BaseModel  # pylint:disable=no-name-in-module
@@ -25,6 +25,7 @@ class Animal(BaseModel):
     """
     Animal model for testing
     """
+
     id: int
     fact: str
     animal: str
