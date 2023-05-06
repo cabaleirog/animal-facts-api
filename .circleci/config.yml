@@ -21,7 +21,7 @@ jobs:
     # The executor is the environment in which the steps below will be executed - below will use a python 3.10.2 container
     # Change the version below to your required version of python
     docker:
-      - image: cimg/base:2023.05
+      - image: cimg/python:3.10.2
     # Checkout the code as the first step. This is a dedicated CircleCI step.
     # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
     # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
@@ -31,11 +31,16 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install Docker
-          command: apt-get update && apt-get install -y --no-install-recommends docker docker-compose
+          name: Install Docker Compose
+          environment:
+            COMPOSE_VERSION: "1.29.2"
+          command: |
+            curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
           name: Run tests
-          command: docker compose up -d && \
+          command: docker-compose up -d && \
                    docker exec $(docker compose ps | grep web | awk '{ print $1 }') sh -c "python -m pytest testing -s -vvv"
 
 # Invoke jobs via workflows
