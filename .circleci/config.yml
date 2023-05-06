@@ -56,7 +56,7 @@ jobs:
             mv /tmp/docker/* /usr/bin
             curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
             chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+            sudo mv ~/docker-compose /usr/bin/docker-compose
             docker-compose up -d
             sleep 10
             docker exec $(docker-compose ps | grep web | awk '{ print $1 }') sh -c "python -m pytest testing -s -vvv"
