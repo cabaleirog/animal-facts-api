@@ -12,7 +12,7 @@ def client() -> Iterator[Client]:
     """
     Return the TestClient
     """
-    with Client(base_url="http://web:8080") as _client:
+    with Client(base_url="http://localhost:8080") as _client:
         try:
             yield _client
         finally:
