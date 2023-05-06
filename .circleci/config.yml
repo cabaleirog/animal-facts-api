@@ -45,13 +45,9 @@ jobs:
       - run:
           name: Start all services declared in docker-compose.yml
           command: docker-compose up -d
-
-      - run:
-          name: Install dependencies
-          command: python -m pip install -r requirements.txt
       - run:
           name: Run tests
-          command: python -m pytest testing -s -vvv
+          command: docker compose run --rm web sh -c "python -m pytest testing -s -vvv"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows

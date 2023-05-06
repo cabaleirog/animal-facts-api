@@ -11,5 +11,5 @@ COPY ./requirements.txt /code/
 RUN python3 -m pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 # Copy the API source code to WORKDIR
-COPY ./src /code/src
+COPY . .
 CMD [ "python3", "-m", "src" ]
