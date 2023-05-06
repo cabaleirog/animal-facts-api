@@ -10,6 +10,7 @@ services:
     depends_on:
       db:
         condition: service_started
+    hostname: web
     networks:
       - appnet
     env_file:
@@ -22,6 +23,7 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
       - ./migrations:/docker-entrypoint-initdb.d
+    hostname: db
     ports:
       - "5432:5432"
     networks:
