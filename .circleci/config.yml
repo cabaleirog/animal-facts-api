@@ -45,7 +45,6 @@ jobs:
       - run:
           name: Run tests
           command: docker-compose up -d && \
-                   sleep 10 && \
                    docker exec $(docker compose ps | grep web | awk '{ print $1 }') sh -c "python -m pytest testing -s -vvv"
 
 # Invoke jobs via workflows
