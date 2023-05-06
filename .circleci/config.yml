@@ -60,8 +60,7 @@ jobs:
             docker-compose up -d
             sleep 10
             docker-compose logs web
-            docker exec project-web-1 sh -c "apt update && apt install -y iputils-ping curl && ping -c10 web && curl -I http://web:8080 && curl http://web/8080/facts && echo 'Success!'"
-          # docker exec project-web-1 sh -c "python -m pytest testing -s -vvv"
+            docker exec project-web-1 sh -c "python -m pytest testing -s -vvv" || docker-compose logs web
           # docker exec $(docker compose ps | grep web | awk '{ print $1 }') sh -c "python -m pytest testing -s -vvv"
 
           #docker compose up -d
